@@ -1,17 +1,10 @@
 import { Inter } from 'next/font/google'
-import { Menbere } from 'next/font/google' // Pieņemot, ka fonts ir pieejams šādi
 import './globals.css'
 
 // Fontu konfigurācija
 // Piezīme: 'Menbere' nav standarta Google fonts, tāpēc šī ir hipotētiska ielāde.
 // Ja tas nav pieejams caur `next/font`, būs jāizmanto <link> tags, kā HTML versijā.
 // Pagaidām atstājam kā ir, bet Next.js varētu mest kļūdu.
-const menbere = Menbere({ 
-  subsets: ['latin'],
-  variable: '--font-menbere',
-  display: 'swap',
-  weight: ['100','200','300','400','500','600','700']
-})
 
 const inter = Inter({ 
   subsets: ['latin'],
