@@ -1,8 +1,7 @@
-'use client'; 
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- IKONAS ---
 const GridIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
 );
@@ -13,34 +12,24 @@ const ArrowUpIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
 );
 
-// --- KONSTANTES ---
 const STRAPI_URL = 'https://api.kazocina.pro';
-
-// --- MAZĀKAS KOMPONENTES ---
 
 function QuoteCard({ quote }) {
   const imageUrl = quote.image?.url ? `${STRAPI_URL}${quote.image.url}` : null;
   return (
-    <div className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10">
-      {imageUrl && (
-        <img 
-          src={imageUrl} 
-          alt={`Attēls priekš citāta no "${quote.source}"`} 
-          className="w-full h-48 object-cover"
-          onError={(e) => { e.target.onerror = null; e.target.src=`https://placehold.co/600x400/C2AFF0/462255?text=Bilde+nav+pieejama`; }}
-        />
-      )}
-      <div className="p-6 flex flex-col flex-grow">
-        <blockquote className="text-lg italic text-russian-violet mb-4 flex-grow font-sans">
-          <p>{quote.text}</p>
-        </blockquote>
-        <div className="text-right text-gray-500 mb-4 font-sans">
-          <p className="font-bold text-mint">— {quote.author?.name || 'Nezināms autors'}</p>
-          <p className="text-sm text-gray-400 mt-1">{quote.source || 'Nezināms avots'}</p>
+    <div className="rounded-2xl shadow-lg bg-white/30 flex flex-col overflow-hidden">
+      <div className="bg-russian-violet text-white text-3xl font-bold text-center py-16">
+        {imageUrl ? <img src={imageUrl} alt="" className="w-full h-32 object-cover rounded-t-2xl" /> : `Bilde ${quote.id || ''}`}
+      </div>
+      <div className="bg-white/70 p-6 flex flex-col flex-grow">
+        <blockquote className="italic text-russian-violet mb-4 flex-grow text-base">{quote.text}</blockquote>
+        <div className="text-right text-gray-500 font-sans text-sm">
+          <span className="font-bold text-mint">{quote.author?.name || 'Nezināms autors'}</span>
+          {quote.source && <span className="block text-gray-400">{quote.source}</span>}
         </div>
-        <div className="flex flex-wrap gap-2 mt-auto">
+        <div className="flex flex-wrap gap-2 mt-3">
           {quote.tags?.map(tag => (
-            <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full font-sans">{tag.name}</span>
+            <span key={tag.id} className="bg-mint text-white rounded-full px-4 py-1 text-sm font-semibold">{tag.name}</span>
           ))}
         </div>
       </div>
@@ -50,19 +39,19 @@ function QuoteCard({ quote }) {
 
 function QuoteListItem({ quote }) {
   return (
-    <div className="bg-white/50 p-6 rounded-xl shadow-lg border border-russian-violet/10">
-      <blockquote className="text-lg italic text-russian-violet mb-4 font-sans">
+    <div className="bg-white/70 p-6 rounded-2xl shadow-lg border border-russian-violet/10">
+      <blockquote className="italic text-russian-violet mb-4 font-sans">
         <p>{quote.text}</p>
       </blockquote>
       <div className="flex justify-between items-end">
         <div className="flex flex-wrap gap-2">
           {quote.tags?.map(tag => (
-            <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full font-sans">{tag.name}</span>
+            <span key={tag.id} className="bg-mint text-white rounded-full px-4 py-1 text-sm font-semibold">{tag.name}</span>
           ))}
         </div>
-        <div className="text-right text-gray-500 font-sans">
-          <p className="font-bold text-mint">— {quote.author?.name || 'Nezināms autors'}</p>
-          <p className="text-sm text-gray-400 mt-1">{quote.source || 'Nezināms avots'}</p>
+        <div className="text-right text-gray-500 font-sans text-sm">
+          <span className="font-bold text-mint">{quote.author?.name || 'Nezināms autors'}</span>
+          {quote.source && <span className="block text-gray-400">{quote.source}</span>}
         </div>
       </div>
     </div>
@@ -93,7 +82,6 @@ function ScrollToTopButton() {
   );
 }
 
-// Galvenā interaktīvā komponente
 export default function QuoteClient({ initialQuotes, initialTags }) {
   const [quotes] = useState(initialQuotes);
   const [tags] = useState(initialTags);
@@ -113,7 +101,7 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
       return matchesSearch && matchesAuthor && matchesSource && matchesTag;
     });
   }, [quotes, searchTerm, authorFilter, sourceFilter, tagFilter]);
-  
+
   const uniqueAuthors = useMemo(() => [...new Set(quotes.map(q => q.author?.name).filter(Boolean))], [quotes]);
   const uniqueSources = useMemo(() => [...new Set(quotes.map(q => q.source).filter(Boolean))], [quotes]);
 
@@ -134,30 +122,33 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-10">
-        <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'hidden'}>
-          <div className="md:col-span-2 lg:col-span-3 bg-white/50 rounded-xl shadow-lg p-6 space-y-4 border border-russian-violet/10">
-            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-white/70 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition font-sans" onChange={e => setSearchTerm(e.target.value)} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint font-sans" onChange={e => setAuthorFilter(e.target.value)}>
-                <option value="">Filtrēt pēc autora</option>
-                {uniqueAuthors.map(author => <option key={author} value={author}>{author}</option>)}
-              </select>
-              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint font-sans" onChange={e => setSourceFilter(e.target.value)}>
-                <option value="">Filtrēt pēc avota</option>
-                {uniqueSources.map(source => <option key={source} value={source}>{source}</option>)}
-              </select>
-            </div>
-            <div className="pt-2">
-              <span className="text-sm font-semibold text-russian-violet/80 mr-3 font-sans">Populāri tagi:</span>
-              <div className="inline-flex flex-wrap gap-2">
-                <button onClick={() => setTagFilter('')} className={`px-3 py-1 text-sm rounded-full transition font-bold ${tagFilter === '' ? 'bg-light-green text-russian-violet' : 'bg-mint text-white hover:opacity-80'}`}>Visi</button>
-                {tags.map(tag => <button key={tag.id} onClick={() => setTagFilter(tag.name)} className={`px-3 py-1 text-sm rounded-full transition font-bold ${tagFilter === tag.name ? 'bg-light-green text-russian-violet' : 'bg-mint text-white hover:opacity-80'}`}>{tag.name}</button>)}
-              </div>
+        {/* FILTRA KARTIŅA */}
+        <div className="bg-white/70 rounded-2xl shadow-lg p-6 mb-10">
+          <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-4 rounded-lg bg-white mb-4 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition font-sans" onChange={e => setSearchTerm(e.target.value)} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <select className="w-full bg-white text-russian-violet p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint font-sans" onChange={e => setAuthorFilter(e.target.value)}>
+              <option value="">Filtrēt pēc autora</option>
+              {uniqueAuthors.map(author => <option key={author} value={author}>{author}</option>)}
+            </select>
+            <select className="w-full bg-white text-russian-violet p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint font-sans" onChange={e => setSourceFilter(e.target.value)}>
+              <option value="">Filtrēt pēc avota</option>
+              {uniqueSources.map(source => <option key={source} value={source}>{source}</option>)}
+            </select>
+          </div>
+          <div>
+            <span className="text-sm font-semibold text-russian-violet/80 mr-3 font-sans">Populāri tagi:</span>
+            <div className="inline-flex flex-wrap gap-2 mt-2">
+              <button onClick={() => setTagFilter('')} className={`px-4 py-1 text-sm rounded-full font-semibold transition ${tagFilter === '' ? 'bg-mint text-white' : 'bg-mint/40 text-mint hover:bg-mint/60'}`}>Visi</button>
+              {tags.map(tag => <button key={tag.id} onClick={() => setTagFilter(tag.name)} className={`px-4 py-1 text-sm rounded-full font-semibold transition ${tagFilter === tag.name ? 'bg-mint text-white' : 'bg-mint/40 text-mint hover:bg-mint/60'}`}>{tag.name}</button>)}
             </div>
           </div>
+        </div>
+
+        {/* CITĀTU KARTIŅAS */}
+        <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'hidden'}>
           {filteredQuotes.map(quote => <QuoteCard key={quote.id} quote={quote} />)}
         </div>
-        
+
         <div className={view === 'list' ? 'space-y-6' : 'hidden'}>
           {filteredQuotes.map(quote => <QuoteListItem key={quote.id} quote={quote} />)}
         </div>

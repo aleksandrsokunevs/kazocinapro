@@ -3,13 +3,14 @@
 @tailwind utilities;
 
 body {
-  /* Ja theme() nestrādā, aizvieto ar hex: */
   color: #462255;           /* russian-violet */
-  background: #b784a7;      /* mauve */
+  background: #c2aff0;      /* gaišāka lavanda/mauve kā piemēra attēlā */
   font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  min-height: 100vh;
+  padding-bottom: 32px; /* lai nav pie pašas malas */
 }
 
-/* Pielāgojam select bultiņas krāsu gaišajam fonam */
+/* Select bultiņa paliek kā bija */
 select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23462255' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.5rem center;
