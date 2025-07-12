@@ -31,7 +31,7 @@ function QuoteCard({ quote }) {
         />
       )}
       <div className="p-6 flex flex-col flex-grow">
-        <blockquote className="text-lg italic text-russian-violet mb-4 flex-grow">
+        <blockquote className="text-lg italic text-russian-violet mb-4 flex-grow font-sans">
           <p>{quote.text}</p>
         </blockquote>
         <div className="text-right text-gray-500 mb-4 font-sans">
@@ -51,7 +51,7 @@ function QuoteCard({ quote }) {
 function QuoteListItem({ quote }) {
   return (
     <div className="bg-white/50 p-6 rounded-xl shadow-lg border border-russian-violet/10">
-      <blockquote className="text-lg italic text-russian-violet mb-4">
+      <blockquote className="text-lg italic text-russian-violet mb-4 font-sans">
         <p>{quote.text}</p>
       </blockquote>
       <div className="flex justify-between items-end">
@@ -118,7 +118,7 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
   const uniqueSources = useMemo(() => [...new Set(quotes.map(q => q.source).filter(Boolean))], [quotes]);
 
   return (
-    <div className="w-full">
+    <div className="w-full font-sans">
       <header className="sticky top-0 z-50 bg-mauve/80 backdrop-blur-md p-4 border-b border-russian-violet/10">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
           <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Kazocina.pro</h1>
@@ -136,13 +136,13 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
       <main className="max-w-5xl mx-auto px-4 py-10">
         <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'hidden'}>
           <div className="md:col-span-2 lg:col-span-3 bg-white/50 rounded-xl shadow-lg p-6 space-y-4 border border-russian-violet/10">
-            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-white/70 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition" onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-white/70 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition font-sans" onChange={e => setSearchTerm(e.target.value)} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setAuthorFilter(e.target.value)}>
+              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint font-sans" onChange={e => setAuthorFilter(e.target.value)}>
                 <option value="">Filtrēt pēc autora</option>
                 {uniqueAuthors.map(author => <option key={author} value={author}>{author}</option>)}
               </select>
-              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setSourceFilter(e.target.value)}>
+              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint font-sans" onChange={e => setSourceFilter(e.target.value)}>
                 <option value="">Filtrēt pēc avota</option>
                 {uniqueSources.map(source => <option key={source} value={source}>{source}</option>)}
               </select>
@@ -163,7 +163,7 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
         </div>
 
         {filteredQuotes.length === 0 && (
-          <p className="text-center text-gray-500 mt-10">Pēc Jūsu kritērijiem nekas netika atrasts.</p>
+          <p className="text-center text-gray-500 mt-10 font-sans">Pēc Jūsu kritērijiem nekas netika atrasts.</p>
         )}
       </main>
 
