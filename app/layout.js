@@ -15,7 +15,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="lv" className={inter.variable}>
-      <body className="font-sans">{children}</body>
+      <body className="font-serif">{children}</body>
     </html>
   )
 }
