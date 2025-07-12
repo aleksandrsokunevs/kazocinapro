@@ -33,7 +33,7 @@ export default async function HomePage() {
             <figure key={quote.id} className="bg-gray-800 p-6 rounded-xl shadow-lg">
               <blockquote className="text-lg italic text-gray-200">
                 {/* TAGAD IZMANTOJAM quote.text TIEŠI */}
-                <p>"{quote.text}"</p>
+                <p>{quote.text}</p>
               </blockquote>
               <figcaption className="text-right mt-4 text-cyan-400">
                 {/* UN quote.author.name TIEŠI */}
