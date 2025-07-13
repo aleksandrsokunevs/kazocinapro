@@ -1,9 +1,6 @@
-// Fails: app/page.js
-// Šis ir galvenais lapas komponents. Tā ir Servera Komponente.
+import QuoteClient from './QuoteClient';
 
-import QuoteClient from './QuoteClient'; // Importējam mūsu Klienta Komponenti
-
-// ŠĪ RINDINĀ PASAKA NEXT.JS, LAI LAPA VIENMĒR TIEK RENDERĒTA DINAMISKI
+// Šī rinda ir svarīga, lai lapa vienmēr būtu dinamiska
 export const dynamic = 'force-dynamic';
 
 // --- KONSTANTES ---
@@ -11,43 +8,46 @@ const STRAPI_URL = 'https://api.kazocina.pro';
 
 // --- DATU IEGUVES FUNKCIJAS ---
 
-// Iegūst visus publicētos citātus
-async function getQuotes() {
+async function getQuotesAndTags() {
   try {
-    const res = await fetch(`${STRAPI_URL}/api/quotes?populate=*`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Neizdevās ielādēt citātus');
-    return res.json();
+    // Vienlaicīgi pieprasām gan citātus, gan birkas
+    const [quotesRes, tagsRes] = await Promise.all([
+      fetch(`${STRAPI_URL}/api/quotes?populate=*`, { cache: 'no-store' }),
+      fetch(`${STRAPI_URL}/api/tags`, { cache: 'no-store' })
+    ]);
+
+    if (!quotesRes.ok) throw new Error('Neizdevās ielādēt citātus');
+    if (!tagsRes.ok) throw new Error('Neizdevās ielādēt birkas');
+
+    const quotesJson = await quotesRes.json();
+    const tagsJson = await tagsRes.json();
+
+    return {
+      quotes: quotesJson.data || [],
+      tags: tagsJson.data || []
+    };
   } catch (error) {
-    console.error("Citātu ielādes kļūda:", error);
-    return { data: [] };
+    console.error("Datu ielādes kļūda:", error);
+    return { quotes: [], tags: [] };
   }
 }
 
-// Iegūst visas publicētās birkas (tags)
-async function getTags() {
-  try {
-    const res = await fetch(`${STRAPI_URL}/api/tags`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Neizdevās ielādēt birkas');
-    return res.json();
-  } catch (error) {
-    console.error("Birku ielādes kļūda:", error);
-    return { data: [] };
-  }
-}
-
-// Galvenā lapas komponente, kas tiek izsaukta pirmā.
+// Galvenā lapas komponente
 export default async function HomePage() {
-  // Saņemam datus no abām funkcijām vienlaicīgi uz servera
-  const [quotesResponse, tagsResponse] = await Promise.all([getQuotes(), getTags()]);
-  
-  // Pārbaudām, vai dati ir saņemti pareizi
-  const initialQuotes = quotesResponse?.data || [];
-  const initialTags = tagsResponse?.data || [];
+  const { quotes, tags } = await getQuotesAndTags();
+
+  // Izvēlamies vienu nejaušu citātu kā "dienas citātu"
+  const quoteOfTheDay = quotes.length > 0
+    ? quotes[Math.floor(Math.random() * quotes.length)]
+    : null;
 
   return (
     <div className="bg-mauve text-russian-violet min-h-screen">
-      {/* Visa lapas loģika un stāvokļa pārvaldība notiek QuoteClient komponentē */}
-       <QuoteClient initialQuotes={initialQuotes} initialTags={initialTags} />
+       <QuoteClient 
+         initialQuotes={quotes} 
+         initialTags={tags} 
+         quoteOfTheDay={quoteOfTheDay} 
+       />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
+import { AdCard } from './AdComponent'; 
 
 // --- IKONAS ---
 const GridIcon = () => (
@@ -16,66 +17,79 @@ const ArrowUpIcon = () => (
 const ShareIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
 );
+const DiceIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M16 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M8 8h.01"/><path d="M12 16h.01"/></svg>
+);
 
 
 // --- KONSTANTES ---
 const STRAPI_URL = 'https://api.kazocina.pro';
 
-// --- REKLĀMAS KOMPONENTES ---
-
-// Komponente, kas atbild par AdSense loģiku
-function AdsenseAd({ adSlot, responsive = 'true' }) {
-  const adRef = useRef(null);
-
-  useEffect(() => {
-    // Pārbaudām, vai reklāmas elements ir DOM un vai tam nav jau ielādēta reklāma
-    // Google pievieno atribūtu data-ad-status="filled", kad reklāma ir ielādēta
-    if (adRef.current && adRef.current.getAttribute("data-ad-status") !== "filled") {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (err) {
-        console.error("AdSense push kļūda:", err);
-      }
-    }
-  }, [adSlot]); // Atkarība no adSlot, ja tas mainītos
-
+// --- JAUNA KOMPONENTE TEKSTA IEKRĀSOŠANAI ---
+function HighlightText({ text, highlight }) {
+  if (!text) return null;
+  if (!highlight || !highlight.trim()) {
+    return <span>{text}</span>;
+  }
+  const regex = new RegExp(`(${highlight})`, 'gi');
+  const parts = text.split(regex);
   return (
-    <ins
-      ref={adRef}
-      className="adsbygoogle"
-      style={{ display: 'block', width: '100%', height: '100%' }}
-      data-ad-client="ca-pub-0388155554297058"
-      data-ad-slot={adSlot}
-      data-ad-format="fluid"
-      data-full-width-responsive={responsive}
-    ></ins>
+    <span>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-icterine/70 text-russian-violet rounded px-1 py-0.5">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </span>
   );
 }
 
-// Komponente, kas ir stilizēta kā kartīte un satur AdSense bloku
-function AdCard({ adSlot }) {
+// --- JAUNA KOMPONENTE "DIENAS CITĀTAM" ---
+function QuoteOfTheDayCard({ quote }) {
+    if (!quote) return null;
+
+    const getImageUrl = () => {
+        if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
+        return `https://placehold.co/1200x400/462255/C2AFF0?text=Sintijas+Citati`;
+    };
+
+    const imageUrl = getImageUrl();
+
     return (
-      <div className="bg-white/50 rounded-xl shadow-lg overflow-hidden flex flex-col border border-russian-violet/10 p-4 justify-center items-center min-h-[300px]">
-        <span className="text-xs text-russian-violet/50 mb-2 font-sans">Reklāma</span>
-        <div className="w-full h-full flex-grow">
-          <AdsenseAd adSlot={adSlot} />
+        <div className="mb-12 rounded-xl shadow-lg overflow-hidden relative min-h-[300px] flex items-center justify-center text-center">
+            <img 
+                src={imageUrl} 
+                alt="Dienas citāta fons"
+                className="absolute top-0 left-0 w-full h-full object-cover filter blur-sm brightness-50"
+            />
+            <div className="relative p-8 text-white z-10">
+                <blockquote className="text-2xl md:text-3xl lg:text-4xl font-serif italic mb-4">
+                    <p>"{quote.text}"</p>
+                </blockquote>
+                <figcaption className="text-lg text-mauve/90">
+                    — {quote.author?.name || 'Nezināms autors'}
+                    {/* LABOJUMS: Pievienots avots */}
+                    {quote.source && <span className="block text-sm opacity-70 mt-1">{quote.source}</span>}
+                </figcaption>
+            </div>
         </div>
-      </div>
     );
 }
 
 
 // --- MAZĀKAS KOMPONENTES ---
 
-function QuoteCard({ quote }) {
+function QuoteCard({ quote, searchTerm, animationDelay }) {
   const cardRef = useRef(null);
 
   const handleShare = () => {
     const cardElement = cardRef.current;
-    if (cardElement === null) {
-      return;
-    }
-
+    if (cardElement === null) return;
+    
     const shareButton = cardElement.querySelector('.share-button');
     const brandElement = cardElement.querySelector('.branding-on-export');
     
@@ -89,46 +103,59 @@ function QuoteCard({ quote }) {
       })
       .then((dataUrl) => {
         const link = document.createElement('a');
-        link.download = `citats-${quote.id || 'kazocinapro'}.png`;
+        link.download = `citats-${quote.id || 'sintijas-citati'}.png`;
         link.href = dataUrl;
         link.click();
       })
-      .catch((err) => {
-        console.error('Oops, something went wrong!', err);
-      })
+      .catch((err) => console.error('Oops, something went wrong!', err))
       .finally(() => {
         if (shareButton) shareButton.style.visibility = 'visible';
         if (brandElement) brandElement.style.visibility = 'hidden';
       });
   };
 
-  const imageUrl = quote.image?.url ? `${STRAPI_URL}${quote.image.url}` : null;
+  // LABOJUMS: Noņemts Unsplash, aizstāts ar placeholder
+  const getImageUrl = () => {
+    if (quote.image?.url) {
+      return `${STRAPI_URL}${quote.image.url}`;
+    }
+    return `https://placehold.co/600x400/C2AFF0/462255?text=Bilde+nav+pievienota`;
+  };
+
+  const imageUrl = getImageUrl();
   
+  const getFontSizeClass = (text) => {
+    const length = text?.length || 0;
+    if (length > 250) return 'text-md';
+    if (length > 150) return 'text-lg';
+    return 'text-xl';
+  };
+
   return (
-    <div ref={cardRef} className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10 relative">
-      
+    <div 
+      id={`quote-${quote.id}`}
+      ref={cardRef} 
+      className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10 relative animate-fadeIn"
+      style={{ animationDelay: `${animationDelay}ms` }}
+    >
       <button onClick={handleShare} className="share-button absolute top-3 right-3 bg-mint/50 text-white p-2 rounded-full hover:bg-mint transition z-10" aria-label="Kopīgot kā attēlu">
         <ShareIcon />
       </button>
-
       <div className="branding-on-export absolute top-4 right-4 text-russian-violet font-bold font-sans" style={{ visibility: 'hidden' }}>
-        kazocina.pro
+        Sintijas Citāti
       </div>
-
-      {imageUrl && (
-        <img 
-          src={imageUrl} 
-          alt={`Attēls priekš citāta no "${quote.source}"`} 
-          className="w-full h-48 object-cover"
-          crossOrigin="anonymous" 
-          onError={(e) => { e.target.onerror = null; e.target.src=`https://placehold.co/600x400/C2AFF0/462255?text=Bilde+nav+pieejama`; }}
-        />
-      )}
+      <img 
+        src={imageUrl} 
+        alt={`Attēls priekš citāta no "${quote.source}"`} 
+        className="w-full h-48 object-cover"
+        crossOrigin="anonymous" 
+        onError={(e) => { e.target.onerror = null; e.target.src=`https://placehold.co/600x400/C2AFF0/462255?text=Bilde+nav+pieejama`; }}
+      />
       <div className="p-6 flex flex-col flex-grow">
-        <blockquote className="text-lg text-russian-violet mb-4 flex-grow">
-          <p>{quote.text}</p>
+        <blockquote className={`text-russian-violet mb-4 flex-grow italic ${getFontSizeClass(quote.text)}`}>
+          <p><HighlightText text={quote.text} highlight={searchTerm} /></p>
         </blockquote>
-        <div className="text-right text-gray-500 mb-4">
+        <div className="text-right text-gray-500 mb-4 font-sans">
           <p className="font-bold text-mint">— {quote.author?.name || 'Nezināms autors'}</p>
           <p className="text-sm text-gray-400 mt-1">{quote.source || 'Nezināms avots'}</p>
         </div>
@@ -142,11 +169,14 @@ function QuoteCard({ quote }) {
   );
 }
 
-function QuoteListItem({ quote }) {
+function QuoteListItem({ quote, searchTerm }) {
+  if (!quote) {
+    return null;
+  }
   return (
     <div className="bg-white/50 p-6 rounded-xl shadow-lg border border-russian-violet/10">
-      <blockquote className="text-lg text-russian-violet mb-4">
-        <p>{quote.text}</p>
+      <blockquote className="text-xl text-russian-violet mb-4 italic">
+        <p><HighlightText text={quote.text} highlight={searchTerm} /></p>
       </blockquote>
       <div className="flex justify-between items-end">
         <div className="flex flex-wrap gap-2">
@@ -154,7 +184,7 @@ function QuoteListItem({ quote }) {
             <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
           ))}
         </div>
-        <div className="text-right text-gray-500">
+        <div className="text-right text-gray-500 font-sans">
           <p className="font-bold text-mint">— {quote.author?.name || 'Nezināms autors'}</p>
           <p className="text-sm text-gray-400 mt-1">{quote.source || 'Nezināms avots'}</p>
         </div>
@@ -188,7 +218,7 @@ function ScrollToTopButton() {
 }
 
 // Galvenā interaktīvā komponente
-export default function QuoteClient({ initialQuotes, initialTags }) {
+export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay }) {
   const [quotes] = useState(initialQuotes);
   const [tags] = useState(initialTags);
   const [view, setView] = useState('grid');
@@ -210,29 +240,31 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
   
   const uniqueAuthors = useMemo(() => [...new Set(quotes.map(q => q.author?.name).filter(Boolean))], [quotes]);
   const uniqueSources = useMemo(() => [...new Set(quotes.map(q => q.source).filter(Boolean))], [quotes]);
-  
-  // Izveidojam jaunu masīvu, kurā starp citātiem ir ievietotas reklāmas
-  const itemsWithAds = useMemo(() => {
-    const items = [];
-    filteredQuotes.forEach((quote, index) => {
-      items.push(<QuoteCard key={quote.id} quote={quote} />);
-      // Pievienojam reklāmu pēc katra 6. citāta
-      if ((index + 1) % 6 === 0) {
-        items.push(<AdCard key={`ad-${index}`} adSlot="4775307152" />);
-      }
-    });
-    return items;
-  }, [filteredQuotes]);
 
+  const handleRandomQuote = () => {
+    if (filteredQuotes.length === 0) return;
+    const randomQuote = filteredQuotes[Math.floor(Math.random() * filteredQuotes.length)];
+    const element = document.getElementById(`quote-${randomQuote.id}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('ring-2', 'ring-light-green', 'ring-offset-4', 'ring-offset-mauve');
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-light-green', 'ring-offset-4', 'ring-offset-mauve');
+      }, 2000);
+    }
+  };
 
   return (
     <div className="w-full">
       <header className="sticky top-0 z-50 bg-mauve/80 backdrop-blur-md p-4 border-b border-russian-violet/10">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
-          <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Kazocina.pro</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Sintijas Citāti</h1>
           <div className="flex-grow"></div>
           <div className="flex items-center gap-2">
             <a href="#" className="text-russian-violet hover:text-mint transition hidden md:block px-3">Par mums</a>
+            <button onClick={handleRandomQuote} className="p-2 bg-russian-violet/10 rounded-full text-russian-violet hover:text-black transition" aria-label="Nejaušs citāts">
+              <DiceIcon />
+            </button>
             <div id="view-switcher" className="flex items-center gap-1 bg-russian-violet/10 p-1 rounded-full">
               <button onClick={() => setView('grid')} className={`p-1.5 rounded-full ${view === 'grid' ? 'bg-mint text-white' : 'text-russian-violet hover:text-black'}`} aria-label="Režģa skats"><GridIcon /></button>
               <button onClick={() => setView('list')} className={`p-1.5 rounded-full ${view === 'list' ? 'bg-mint text-white' : 'text-russian-violet hover:text-black'}`} aria-label="Saraksta skats"><ListIcon /></button>
@@ -242,6 +274,8 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-10">
+        <QuoteOfTheDayCard quote={quoteOfTheDay} />
+
         <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'hidden'}>
           <div className="md:col-span-2 lg:col-span-3 bg-white/50 rounded-xl shadow-lg p-6 space-y-4 border border-russian-violet/10">
             <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-white/70 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition" onChange={e => setSearchTerm(e.target.value)} />
@@ -263,12 +297,21 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
               </div>
             </div>
           </div>
-          {/* Tagad mēs izmantojam masīvu, kurā jau ir ievietotas reklāmas */}
-          {itemsWithAds}
+          
+          {/* LABOJUMS: Atgriezta reklāmu loģika */}
+          {filteredQuotes.map((quote, index) => (
+            <React.Fragment key={quote.id}>
+              <QuoteCard quote={quote} searchTerm={searchTerm} animationDelay={index * 50} />
+              {(index + 1) % 6 === 0 && (
+                <AdCard adSlot="4775307152" />
+              )}
+            </React.Fragment>
+          ))}
+
         </div>
         
         <div className={view === 'list' ? 'space-y-6' : 'hidden'}>
-          {filteredQuotes.map(quote => <QuoteListItem key={quote.id} quote={quote} />)}
+          {filteredQuotes.map(quote => <QuoteListItem key={quote.id} quote={quote} searchTerm={searchTerm} />)}
         </div>
 
         {filteredQuotes.length === 0 && (
