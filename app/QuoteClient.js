@@ -1,6 +1,7 @@
 'use client'; 
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import * as htmlToImage from 'html-to-image';
 
 // --- IKONAS ---
 const GridIcon = () => (
@@ -12,21 +13,114 @@ const ListIcon = () => (
 const ArrowUpIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
 );
+const ShareIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+);
+
 
 // --- KONSTANTES ---
 const STRAPI_URL = 'https://api.kazocina.pro';
 
+// --- REKLĀMAS KOMPONENTES ---
+
+// Komponente, kas atbild par AdSense loģiku
+function AdsenseAd({ adSlot, responsive = 'true' }) {
+  const adRef = useRef(null);
+
+  useEffect(() => {
+    // Pārbaudām, vai reklāmas elements ir DOM un vai tam nav jau ielādēta reklāma
+    // Google pievieno atribūtu data-ad-status="filled", kad reklāma ir ielādēta
+    if (adRef.current && adRef.current.getAttribute("data-ad-status") !== "filled") {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) {
+        console.error("AdSense push kļūda:", err);
+      }
+    }
+  }, [adSlot]); // Atkarība no adSlot, ja tas mainītos
+
+  return (
+    <ins
+      ref={adRef}
+      className="adsbygoogle"
+      style={{ display: 'block', width: '100%', height: '100%' }}
+      data-ad-client="ca-pub-0388155554297058"
+      data-ad-slot={adSlot}
+      data-ad-format="fluid"
+      data-full-width-responsive={responsive}
+    ></ins>
+  );
+}
+
+// Komponente, kas ir stilizēta kā kartīte un satur AdSense bloku
+function AdCard({ adSlot }) {
+    return (
+      <div className="bg-white/50 rounded-xl shadow-lg overflow-hidden flex flex-col border border-russian-violet/10 p-4 justify-center items-center min-h-[300px]">
+        <span className="text-xs text-russian-violet/50 mb-2 font-sans">Reklāma</span>
+        <div className="w-full h-full flex-grow">
+          <AdsenseAd adSlot={adSlot} />
+        </div>
+      </div>
+    );
+}
+
+
 // --- MAZĀKAS KOMPONENTES ---
 
 function QuoteCard({ quote }) {
+  const cardRef = useRef(null);
+
+  const handleShare = () => {
+    const cardElement = cardRef.current;
+    if (cardElement === null) {
+      return;
+    }
+
+    const shareButton = cardElement.querySelector('.share-button');
+    const brandElement = cardElement.querySelector('.branding-on-export');
+    
+    if (shareButton) shareButton.style.visibility = 'hidden';
+    if (brandElement) brandElement.style.visibility = 'visible';
+
+    htmlToImage.toPng(cardElement, { 
+        cacheBust: true, 
+        pixelRatio: 2,
+        backgroundColor: '#C2AFF0', 
+      })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = `citats-${quote.id || 'kazocinapro'}.png`;
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => {
+        console.error('Oops, something went wrong!', err);
+      })
+      .finally(() => {
+        if (shareButton) shareButton.style.visibility = 'visible';
+        if (brandElement) brandElement.style.visibility = 'hidden';
+      });
+  };
+
   const imageUrl = quote.image?.url ? `${STRAPI_URL}${quote.image.url}` : null;
+  
   return (
-    <div className="bg-card-bg rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-card-border">
+    <div ref={cardRef} className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10 relative">
+      
+      <button onClick={handleShare} className="share-button absolute top-3 right-3 bg-mint/50 text-white p-2 rounded-full hover:bg-mint transition z-10" aria-label="Kopīgot kā attēlu">
+        <ShareIcon />
+      </button>
+
+      <div className="branding-on-export absolute top-4 right-4 text-russian-violet font-bold font-sans" style={{ visibility: 'hidden' }}>
+        kazocina.pro
+      </div>
+
       {imageUrl && (
         <img 
           src={imageUrl} 
           alt={`Attēls priekš citāta no "${quote.source}"`} 
           className="w-full h-48 object-cover"
+          crossOrigin="anonymous" 
           onError={(e) => { e.target.onerror = null; e.target.src=`https://placehold.co/600x400/C2AFF0/462255?text=Bilde+nav+pieejama`; }}
         />
       )}
@@ -40,7 +134,7 @@ function QuoteCard({ quote }) {
         </div>
         <div className="flex flex-wrap gap-2 mt-auto">
           {quote.tags?.map(tag => (
-            <span key={tag.id} className="bg-tag-bg text-tag-text font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
+            <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
           ))}
         </div>
       </div>
@@ -50,14 +144,14 @@ function QuoteCard({ quote }) {
 
 function QuoteListItem({ quote }) {
   return (
-    <div className="bg-card-bg p-6 rounded-xl shadow-lg border border-card-border">
+    <div className="bg-white/50 p-6 rounded-xl shadow-lg border border-russian-violet/10">
       <blockquote className="text-lg text-russian-violet mb-4">
         <p>{quote.text}</p>
       </blockquote>
       <div className="flex justify-between items-end">
         <div className="flex flex-wrap gap-2">
           {quote.tags?.map(tag => (
-            <span key={tag.id} className="bg-tag-bg text-tag-text font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
+            <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
           ))}
         </div>
         <div className="text-right text-gray-500">
@@ -116,10 +210,24 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
   
   const uniqueAuthors = useMemo(() => [...new Set(quotes.map(q => q.author?.name).filter(Boolean))], [quotes]);
   const uniqueSources = useMemo(() => [...new Set(quotes.map(q => q.source).filter(Boolean))], [quotes]);
+  
+  // Izveidojam jaunu masīvu, kurā starp citātiem ir ievietotas reklāmas
+  const itemsWithAds = useMemo(() => {
+    const items = [];
+    filteredQuotes.forEach((quote, index) => {
+      items.push(<QuoteCard key={quote.id} quote={quote} />);
+      // Pievienojam reklāmu pēc katra 6. citāta
+      if ((index + 1) % 6 === 0) {
+        items.push(<AdCard key={`ad-${index}`} adSlot="4775307152" />);
+      }
+    });
+    return items;
+  }, [filteredQuotes]);
+
 
   return (
     <div className="w-full">
-      <header className="sticky top-0 z-50 bg-mauve/80 backdrop-blur-md p-4 border-b border-card-border">
+      <header className="sticky top-0 z-50 bg-mauve/80 backdrop-blur-md p-4 border-b border-russian-violet/10">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
           <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Kazocina.pro</h1>
           <div className="flex-grow"></div>
@@ -135,14 +243,14 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
 
       <main className="max-w-5xl mx-auto px-4 py-10">
         <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'hidden'}>
-          <div className="md:col-span-2 lg:col-span-3 bg-card-bg rounded-xl shadow-lg p-6 space-y-4 border border-card-border">
-            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-input-bg text-russian-violet placeholder-placeholder-color focus:outline-none focus:ring-2 focus:ring-mint transition" onChange={e => setSearchTerm(e.target.value)} />
+          <div className="md:col-span-2 lg:col-span-3 bg-white/50 rounded-xl shadow-lg p-6 space-y-4 border border-russian-violet/10">
+            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-white/70 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition" onChange={e => setSearchTerm(e.target.value)} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <select className="w-full bg-input-bg text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setAuthorFilter(e.target.value)}>
+              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setAuthorFilter(e.target.value)}>
                 <option value="">Filtrēt pēc autora</option>
                 {uniqueAuthors.map(author => <option key={author} value={author}>{author}</option>)}
               </select>
-              <select className="w-full bg-input-bg text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setSourceFilter(e.target.value)}>
+              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setSourceFilter(e.target.value)}>
                 <option value="">Filtrēt pēc avota</option>
                 {uniqueSources.map(source => <option key={source} value={source}>{source}</option>)}
               </select>
@@ -155,7 +263,8 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
               </div>
             </div>
           </div>
-          {filteredQuotes.map(quote => <QuoteCard key={quote.id} quote={quote} />)}
+          {/* Tagad mēs izmantojam masīvu, kurā jau ir ievietotas reklāmas */}
+          {itemsWithAds}
         </div>
         
         <div className={view === 'list' ? 'space-y-6' : 'hidden'}>
