@@ -1,8 +1,10 @@
-// Fails: src/app/page.js
+// Fails: app/page.js
 // Šis ir galvenais lapas komponents. Tā ir Servera Komponente.
-// Tās vienīgais uzdevums ir saņemt datus un nodot tos tālāk Klienta Komponentei.
 
-import QuoteClient from './QuoteClient'; // Importējam mūsu jauno Klienta Komponenti
+import QuoteClient from './QuoteClient'; // Importējam mūsu Klienta Komponenti
+
+// ŠĪ RINDINĀ PASAKA NEXT.JS, LAI LAPA VIENMĒR TIEK RENDERĒTA DINAMISKI
+export const dynamic = 'force-dynamic';
 
 // --- KONSTANTES ---
 const STRAPI_URL = 'https://api.kazocina.pro';
@@ -43,7 +45,7 @@ export default async function HomePage() {
   const initialTags = tagsResponse?.data || [];
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen">
+    <div className="bg-mauve text-russian-violet min-h-screen">
       {/* Visa lapas loģika un stāvokļa pārvaldība notiek QuoteClient komponentē */}
        <QuoteClient initialQuotes={initialQuotes} initialTags={initialTags} />
     </div>

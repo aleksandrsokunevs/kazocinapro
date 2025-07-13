@@ -21,7 +21,7 @@ const STRAPI_URL = 'https://api.kazocina.pro';
 function QuoteCard({ quote }) {
   const imageUrl = quote.image?.url ? `${STRAPI_URL}${quote.image.url}` : null;
   return (
-    <div className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10">
+    <div className="bg-card-bg rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-card-border">
       {imageUrl && (
         <img 
           src={imageUrl} 
@@ -40,7 +40,7 @@ function QuoteCard({ quote }) {
         </div>
         <div className="flex flex-wrap gap-2 mt-auto">
           {quote.tags?.map(tag => (
-            <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
+            <span key={tag.id} className="bg-tag-bg text-tag-text font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
           ))}
         </div>
       </div>
@@ -50,14 +50,14 @@ function QuoteCard({ quote }) {
 
 function QuoteListItem({ quote }) {
   return (
-    <div className="bg-white/50 p-6 rounded-xl shadow-lg border border-russian-violet/10">
+    <div className="bg-card-bg p-6 rounded-xl shadow-lg border border-card-border">
       <blockquote className="text-lg text-russian-violet mb-4">
         <p>{quote.text}</p>
       </blockquote>
       <div className="flex justify-between items-end">
         <div className="flex flex-wrap gap-2">
           {quote.tags?.map(tag => (
-            <span key={tag.id} className="bg-mint/20 text-green-900 font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
+            <span key={tag.id} className="bg-tag-bg text-tag-text font-semibold text-xs px-2.5 py-0.5 rounded-full">{tag.name}</span>
           ))}
         </div>
         <div className="text-right text-gray-500">
@@ -119,7 +119,7 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
 
   return (
     <div className="w-full">
-      <header className="sticky top-0 z-50 bg-mauve/80 backdrop-blur-md p-4 border-b border-russian-violet/10">
+      <header className="sticky top-0 z-50 bg-mauve/80 backdrop-blur-md p-4 border-b border-card-border">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
           <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Kazocina.pro</h1>
           <div className="flex-grow"></div>
@@ -135,14 +135,14 @@ export default function QuoteClient({ initialQuotes, initialTags }) {
 
       <main className="max-w-5xl mx-auto px-4 py-10">
         <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'hidden'}>
-          <div className="md:col-span-2 lg:col-span-3 bg-white/50 rounded-xl shadow-lg p-6 space-y-4 border border-russian-violet/10">
-            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-white/70 text-russian-violet placeholder-russian-violet/60 focus:outline-none focus:ring-2 focus:ring-mint transition" onChange={e => setSearchTerm(e.target.value)} />
+          <div className="md:col-span-2 lg:col-span-3 bg-card-bg rounded-xl shadow-lg p-6 space-y-4 border border-card-border">
+            <input type="text" placeholder="Meklēt citāta tekstā..." className="w-full p-3 rounded-lg bg-input-bg text-russian-violet placeholder-placeholder-color focus:outline-none focus:ring-2 focus:ring-mint transition" onChange={e => setSearchTerm(e.target.value)} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setAuthorFilter(e.target.value)}>
+              <select className="w-full bg-input-bg text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setAuthorFilter(e.target.value)}>
                 <option value="">Filtrēt pēc autora</option>
                 {uniqueAuthors.map(author => <option key={author} value={author}>{author}</option>)}
               </select>
-              <select className="w-full bg-white/70 text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setSourceFilter(e.target.value)}>
+              <select className="w-full bg-input-bg text-russian-violet p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint" onChange={e => setSourceFilter(e.target.value)}>
                 <option value="">Filtrēt pēc avota</option>
                 {uniqueSources.map(source => <option key={source} value={source}>{source}</option>)}
               </select>

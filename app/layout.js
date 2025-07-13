@@ -1,7 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 
-// Fontu konfigurācija
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',
@@ -10,13 +9,14 @@ const inter = Inter({
 
 export const metadata = {
   title: 'Kazocina.pro Citāti',
-  description: 'Mīļākie citāti no grāmatām',
+  description: 'Viņas mīļākie citāti no grāmatām',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="lv" className={inter.variable}>
-      <body className="font-sans">{children}</body>
+      {/* Šeit tiek pievienotas pareizās fona un teksta krāsu klases */}
+      <body className="font-sans bg-mauve text-russian-violet">{children}</body>
     </html>
   )
 }
