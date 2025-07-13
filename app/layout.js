@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 
+// Fontu konfigurācija
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',

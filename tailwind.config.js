@@ -7,6 +7,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // Pievienojam jauno krāsu paleti
       colors: {
         'russian-violet': '#462255',
         'mauve': '#C2AFF0',
@@ -14,10 +15,9 @@ module.exports = {
         'light-green': '#7EE081',
         'icterine': '#FCFC62',
       },
+      // Pievienojam fontu saimes, lai tās varētu viegli izmantot
       fontFamily: {
         sans: ['var(--font-inter)'],
-        // serif var izņemt, vai atstāt noklusēto Tailwind serif:
-        // serif: ['ui-serif', 'Georgia', 'Cambria', "Times New Roman", 'Times', 'serif'],
       },
     },
   },
