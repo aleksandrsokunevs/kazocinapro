@@ -43,7 +43,7 @@
 
 1.  **Lejupielādējiet repozitoriju:**
     ```bash
-    git clone [https://github.com/aleksandrsokunevs/kazocinapro.git](https://github.com/aleksandrsokunevs/kazocinapro.git)
+    git clone https://github.com/aleksandrsokunevs/kazocinapro.git
     cd kazocinapro
     ```
 2.  **Instalējiet atkarības:**
