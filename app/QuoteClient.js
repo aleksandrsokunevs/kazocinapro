@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { AdCard } from './AdComponent'; 
+import Link from 'next/link';
 
 // --- IKONAS ---
 const GridIcon = () => (
@@ -72,7 +73,6 @@ function QuoteOfTheDayCard({ quote }) {
                 </blockquote>
                 <figcaption className="text-lg text-mauve/90">
                     — {quote.author?.name || 'Nezināms autors'}
-                    {/* LABOJUMS: Pievienots avots */}
                     {quote.source && <span className="block text-sm opacity-70 mt-1">{quote.source}</span>}
                 </figcaption>
             </div>
@@ -85,15 +85,20 @@ function QuoteOfTheDayCard({ quote }) {
 
 function QuoteCard({ quote, searchTerm, animationDelay }) {
   const cardRef = useRef(null);
+  const [isShareMenuOpen, setShareMenuOpen] = useState(false);
 
-  const handleShare = () => {
+  const handleImageShare = () => {
     const cardElement = cardRef.current;
     if (cardElement === null) return;
     
+    // Atrodam visus elementus, kurus pārslēgsim
     const shareButton = cardElement.querySelector('.share-button');
     const brandElement = cardElement.querySelector('.branding-on-export');
-    
+    const shareMenu = cardElement.querySelector('.share-menu-container'); // Jauns selektors
+
+    // Paslēpjam pogu un izvēlni, parādām nosaukumu
     if (shareButton) shareButton.style.visibility = 'hidden';
+    if (shareMenu) shareMenu.style.visibility = 'hidden'; // LABOJUMS: Paslēpjam arī izvēlni
     if (brandElement) brandElement.style.visibility = 'visible';
 
     htmlToImage.toPng(cardElement, { 
@@ -109,12 +114,13 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
       })
       .catch((err) => console.error('Oops, something went wrong!', err))
       .finally(() => {
+        // Atliekam atpakaļ redzamību
         if (shareButton) shareButton.style.visibility = 'visible';
         if (brandElement) brandElement.style.visibility = 'hidden';
+        // Izvēlni nav nepieciešams atlikt atpakaļ, jo to kontrolē `isShareMenuOpen` stāvoklis
       });
   };
 
-  // LABOJUMS: Noņemts Unsplash, aizstāts ar placeholder
   const getImageUrl = () => {
     if (quote.image?.url) {
       return `${STRAPI_URL}${quote.image.url}`;
@@ -131,6 +137,9 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
     return 'text-xl';
   };
 
+  const shareText = `"${quote.text}" — ${quote.author?.name || 'Nezināms'}`;
+  const shareUrl = "https://kazocina.pro";
+
   return (
     <div 
       id={`quote-${quote.id}`}
@@ -138,9 +147,25 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
       className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10 relative animate-fadeIn"
       style={{ animationDelay: `${animationDelay}ms` }}
     >
-      <button onClick={handleShare} className="share-button absolute top-3 right-3 bg-mint/50 text-white p-2 rounded-full hover:bg-mint transition z-10" aria-label="Kopīgot kā attēlu">
+      <button onClick={() => setShareMenuOpen(!isShareMenuOpen)} className="share-button absolute top-3 right-3 bg-mint/50 text-white p-2 rounded-full hover:bg-mint transition z-20" aria-label="Kopīgot">
         <ShareIcon />
       </button>
+
+      {/* ATJAUNOTA KOPĪGOŠANAS IZVĒLNE AR LABOTU STILU */}
+      {isShareMenuOpen && (
+        <div 
+            className="share-menu-container absolute top-14 right-3 bg-russian-violet p-2 rounded-lg shadow-2xl z-30 flex flex-col gap-1 border border-mauve/50"
+            onMouseLeave={() => setShareMenuOpen(false)}
+        >
+          <button onClick={handleImageShare} className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md w-full text-left"><i className="fa-solid fa-image w-5 text-center"></i> Kopīgot kā bildi</button>
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-facebook-f w-5 text-center"></i> Facebook</a>
+          <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-x-twitter w-5 text-center"></i> X (Twitter)</a>
+          <a href={`https://www.threads.net/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-threads w-5 text-center"></i> Threads</a>
+          <a href={`https://bsky.app/intent/compose?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-solid fa-cloud w-5 text-center"></i> Bluesky</a>
+          <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-whatsapp w-5 text-center"></i> WhatsApp</a>
+        </div>
+      )}
+
       <div className="branding-on-export absolute top-4 right-4 text-russian-violet font-bold font-sans" style={{ visibility: 'hidden' }}>
         Sintijas Citāti
       </div>
@@ -156,8 +181,12 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
           <p><HighlightText text={quote.text} highlight={searchTerm} /></p>
         </blockquote>
         <div className="text-right text-gray-500 mb-4 font-sans">
-          <p className="font-bold text-mint">— {quote.author?.name || 'Nezināms autors'}</p>
-          <p className="text-sm text-gray-400 mt-1">{quote.source || 'Nezināms avots'}</p>
+          <Link href={`/autori/${encodeURIComponent(quote.author?.name)}`} className="font-bold text-mint hover:underline">
+            — {quote.author?.name || 'Nezināms autors'}
+          </Link>
+          <Link href={`/avoti/${encodeURIComponent(quote.source)}`} className="block text-sm text-gray-400 mt-1 hover:underline">
+            {quote.source || 'Nezināms avots'}
+          </Link>
         </div>
         <div className="flex flex-wrap gap-2 mt-auto">
           {quote.tags?.map(tag => (
@@ -185,8 +214,12 @@ function QuoteListItem({ quote, searchTerm }) {
           ))}
         </div>
         <div className="text-right text-gray-500 font-sans">
-          <p className="font-bold text-mint">— {quote.author?.name || 'Nezināms autors'}</p>
-          <p className="text-sm text-gray-400 mt-1">{quote.source || 'Nezināms avots'}</p>
+          <Link href={`/autori/${encodeURIComponent(quote.author?.name)}`} className="font-bold text-mint hover:underline">
+            — {quote.author?.name || 'Nezināms autors'}
+          </Link>
+          <Link href={`/avoti/${encodeURIComponent(quote.source)}`} className="block text-sm text-gray-400 mt-1 hover:underline">
+            {quote.source || 'Nezināms avots'}
+          </Link>
         </div>
       </div>
     </div>
@@ -298,13 +331,9 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
             </div>
           </div>
           
-          {/* LABOJUMS: Atgriezta reklāmu loģika */}
           {filteredQuotes.map((quote, index) => (
             <React.Fragment key={quote.id}>
               <QuoteCard quote={quote} searchTerm={searchTerm} animationDelay={index * 50} />
-              {(index + 1) % 6 === 0 && (
-                <AdCard adSlot="4775307152" />
-              )}
             </React.Fragment>
           ))}
 
@@ -317,6 +346,21 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
         {filteredQuotes.length === 0 && (
           <p className="text-center text-gray-500 mt-10">Pēc Jūsu kritērijiem nekas netika atrasts.</p>
         )}
+
+        <div className="mt-16">
+            <h3 className="text-2xl font-bold text-russian-violet text-center mb-6">Pārlūkot pēc tēmas</h3>
+            <div className="flex flex-wrap gap-3 justify-center">
+                {tags.map(tag => (
+                    <button 
+                        key={tag.id} 
+                        onClick={() => setTagFilter(tag.name)}
+                        className="px-4 py-2 text-md rounded-lg transition bg-white/50 hover:bg-mint hover:text-white border border-russian-violet/10"
+                    >
+                        {tag.name}
+                    </button>
+                ))}
+            </div>
+        </div>
       </main>
 
       <ScrollToTopButton />
