@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Sintijas Citātu Lapa
 
-## Getting Started
+Šis ir personīgs projekts, kas radīts, lai izveidotu skaistu un funkcionālu digitālo mājvietu manas sievas apkopotajiem citātiem no grāmatām un citiem avotiem. Mērķis ir radīt elegantu un interaktīvu platformu, kurā var viegli pārlūkot, meklēt un dalīties ar iedvesmojošām domām.
 
-First, run the development server:
+**Tiešraides saite:** [**kazocina.pro**](https://kazocina.pro) 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Funkcionalitāte (Features)
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+* **Dinamiska Citātu Attēlošana:** Visi citāti tiek ielādēti no Strapi CMS, nodrošinot vieglu satura pārvaldību.
+* **Divu veidu Skati:** Lietotāji var pārslēgties starp vizuālu "režģa" skatu ar bildēm un kompaktu "saraksta" skatu.
+* **Jaudīga Filtrēšana:**
+    * Meklēšana citātu tekstā.
+    * Filtrēšana pēc autora.
+    * Filtrēšana pēc avota (grāmatas).
+    * Ātrā filtrēšana pēc populārākajiem tagiem.
+* **"Dienas Citāts":** Lapas augšpusē tiek izcelts īpašs, iedvesmojošs dienas citāts ar fona attēlu.
+* **"Nejaušs Citāts":** Poga, kas ļauj atklāt nejauši izvēlētu citātu no kolekcijas.
+* **Kopīgot kā Attēlu:** Iespēja jebkuru citātu ar vienu klikšķi pārvērst par skaistu attēlu, kas gatavs lejupielādei un publicēšanai sociālajos tīklos.
+* **Dinamisks Fonta Izmērs:** Garāki citāti automātiski tiek attēloti ar nedaudz mazāku fontu, lai saglabātu vienotu bloku izskatu.
+* **Google AdSense Integrācija:** Diskrēti reklāmas bloki monetizācijas iespējām.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🚀 Izmantotās Tehnoloģijas
 
-To learn more about Next.js, take a look at the following resources:
+Šis projekts ir uzbūvēts, izmantojot modernu tehnoloģiju komplektu:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* **Front-end:** [Next.js](https://nextjs.org/) (React ietvars)
+* **Stilizācija:** [Tailwind CSS](https://tailwindcss.com/)
+* **Back-end (CMS):** [Strapi](https://strapi.io/)
+* **Datubāze:** [PostgreSQL](https://www.postgresql.org/)
+* **Hostings:** [DigitalOcean](https://www.digitalocean.com/) Droplets
+* **Web Serveris:** [Nginx](https://www.nginx.com/)
+* **Procesu Menedžeris:** [PM2](https://pm2.keymetrics.io/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🔧 Kā palaist projektu lokāli
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Šis projekts sastāv no divām daļām: `frontend-app` (Next.js) un `strapi-app` (Strapi).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1.  **Lejupielādējiet repozitoriju:**
+    ```bash
+    git clone [https://github.com/aleksandrsokunevs/kazocinapro.git](https://github.com/aleksandrsokunevs/kazocinapro.git)
+    cd kazocinapro
+    ```
+2.  **Instalējiet atkarības:**
+    ```bash
+    npm install
+    ```
+3.  **Palaidiet izstrādes serveri:**
+    ```bash
+    npm run dev
+    ```
+    Aplikācija būs pieejama adresē `http://localhost:3000`.
