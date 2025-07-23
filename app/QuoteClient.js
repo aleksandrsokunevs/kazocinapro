@@ -294,7 +294,7 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
           <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Sintijas Citāti</h1>
           <div className="flex-grow"></div>
           <div className="flex items-center gap-2">
-            <a href="#" className="text-russian-violet hover:text-mint transition hidden md:block px-3">Par mums</a>
+            <a href="/par-projektu" className="text-russian-violet hover:text-mint transition hidden md:block px-3">Par projektu</a>
             <button onClick={handleRandomQuote} className="p-2 bg-russian-violet/10 rounded-full text-russian-violet hover:text-black transition" aria-label="Nejaušs citāts">
               <DiceIcon />
             </button>
