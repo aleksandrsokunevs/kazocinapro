@@ -1,5 +1,5 @@
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
+import CookieBanner from './CookieBanner' // Importējam jauno komponenti
 import './globals.css'
 
 const inter = Inter({ 
@@ -17,14 +17,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="lv" className={inter.variable}>
       <head>
-        {/* AdSense skripts */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0388155554297058"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
-        {/* JAUNUMS: Font Awesome ikonu ielāde */}
+        {/* AdSense un Analytics skripti ir izņemti no šejienes! */}
         <link 
           rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" 
@@ -33,7 +26,10 @@ export default function RootLayout({ children }) {
           referrerPolicy="no-referrer" 
         />
       </head>
-      <body className="font-sans bg-mauve text-russian-violet">{children}</body>
+      <body className="font-sans bg-mauve text-russian-violet">
+        {children}
+        <CookieBanner /> {/* Pievienojam baneri šeit */}
+      </body>
     </html>
   )
 }

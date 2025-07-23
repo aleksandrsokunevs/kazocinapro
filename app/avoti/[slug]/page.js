@@ -1,10 +1,16 @@
-// Šī ir jaunā lapa, kas rādīs visus viena avota (grāmatas) citātus
-
 import Link from 'next/link';
 
 const STRAPI_URL = 'https://api.kazocina.pro';
 
-// Funkcija, kas saņem datus par konkrētu avotu
+// JAUNA FUNKCIJA: Dinamiski ģenerē metadatus
+export async function generateMetadata({ params }) {
+  const sourceName = decodeURIComponent(params.slug);
+  return {
+    title: `Visi citāti no avota: ${sourceName}`,
+    description: `Pārlūkojiet visus citātus, ko Sintija pierakstījusi no avota "${sourceName}".`,
+  };
+}
+
 async function getQuotesBySource(slug) {
   const sourceName = decodeURIComponent(slug);
   const url = `${STRAPI_URL}/api/quotes?filters[source][$eq]=${sourceName}&populate=*`;
@@ -20,7 +26,6 @@ async function getQuotesBySource(slug) {
   }
 }
 
-// Pati lapas komponente
 export default async function SourcePage({ params }) {
   const { quotes, sourceName } = await getQuotesBySource(params.slug);
 
