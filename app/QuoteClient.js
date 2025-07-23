@@ -55,7 +55,8 @@ function QuoteOfTheDayCard({ quote }) {
 
     const getImageUrl = () => {
         if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
-        return `https://placehold.co/1200x400/462255/C2AFF0?text=Sintijas+Citati`;
+        // Izmantojam citāta ID kā "seed", lai bilde būtu konsekventa
+        return `https://picsum.photos/seed/${quote.id}/1200/400`;
     };
 
     const imageUrl = getImageUrl();
@@ -91,14 +92,12 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
     const cardElement = cardRef.current;
     if (cardElement === null) return;
     
-    // Atrodam visus elementus, kurus pārslēgsim
     const shareButton = cardElement.querySelector('.share-button');
     const brandElement = cardElement.querySelector('.branding-on-export');
-    const shareMenu = cardElement.querySelector('.share-menu-container'); // Jauns selektors
+    const shareMenu = cardElement.querySelector('.share-menu-container');
 
-    // Paslēpjam pogu un izvēlni, parādām nosaukumu
     if (shareButton) shareButton.style.visibility = 'hidden';
-    if (shareMenu) shareMenu.style.visibility = 'hidden'; // LABOJUMS: Paslēpjam arī izvēlni
+    if (shareMenu) shareMenu.style.visibility = 'hidden';
     if (brandElement) brandElement.style.visibility = 'visible';
 
     htmlToImage.toPng(cardElement, { 
@@ -114,18 +113,18 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
       })
       .catch((err) => console.error('Oops, something went wrong!', err))
       .finally(() => {
-        // Atliekam atpakaļ redzamību
         if (shareButton) shareButton.style.visibility = 'visible';
         if (brandElement) brandElement.style.visibility = 'hidden';
-        // Izvēlni nav nepieciešams atlikt atpakaļ, jo to kontrolē `isShareMenuOpen` stāvoklis
       });
   };
 
+  // LABOJUMS: Ja nav bildes, ģenerējam no picsum.photos
   const getImageUrl = () => {
     if (quote.image?.url) {
       return `${STRAPI_URL}${quote.image.url}`;
     }
-    return `https://placehold.co/600x400/C2AFF0/462255?text=Bilde+nav+pievienota`;
+    // Izmantojam citāta ID kā "seed", lai bilde būtu konsekventa
+    return `https://picsum.photos/seed/${quote.id}/600/400`;
   };
 
   const imageUrl = getImageUrl();
@@ -151,7 +150,6 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
         <ShareIcon />
       </button>
 
-      {/* ATJAUNOTA KOPĪGOŠANAS IZVĒLNE AR LABOTU STILU */}
       {isShareMenuOpen && (
         <div 
             className="share-menu-container absolute top-14 right-3 bg-russian-violet p-2 rounded-lg shadow-2xl z-30 flex flex-col gap-1 border border-mauve/50"
@@ -294,7 +292,7 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
           <h1 className="text-xl md:text-2xl font-bold text-russian-violet whitespace-nowrap">Sintijas Citāti</h1>
           <div className="flex-grow"></div>
           <div className="flex items-center gap-2">
-            <a href="/par-projektu" className="text-russian-violet hover:text-mint transition hidden md:block px-3">Par projektu</a>
+            <Link href="/par-projektu" className="text-russian-violet hover:text-mint transition hidden md:block px-3">Par projektu</Link>
             <button onClick={handleRandomQuote} className="p-2 bg-russian-violet/10 rounded-full text-russian-violet hover:text-black transition" aria-label="Nejaušs citāts">
               <DiceIcon />
             </button>
@@ -334,6 +332,9 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
           {filteredQuotes.map((quote, index) => (
             <React.Fragment key={quote.id}>
               <QuoteCard quote={quote} searchTerm={searchTerm} animationDelay={index * 50} />
+              {(index + 1) % 6 === 0 && (
+                <AdCard adSlot="4775307152" />
+              )}
             </React.Fragment>
           ))}
 
