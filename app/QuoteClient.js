@@ -52,21 +52,18 @@ function HighlightText({ text, highlight }) {
 // --- JAUNA KOMPONENTE "DIENAS CITĀTAM" ---
 function QuoteOfTheDayCard({ quote }) {
     if (!quote) return null;
-
     const getImageUrl = () => {
         if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
-        // Izmantojam citāta ID kā "seed", lai bilde būtu konsekventa
         return `https://picsum.photos/seed/${quote.id}/1200/400`;
     };
-
     const imageUrl = getImageUrl();
-
     return (
         <div className="mb-12 rounded-xl shadow-lg overflow-hidden relative min-h-[300px] flex items-center justify-center text-center">
             <img 
                 src={imageUrl} 
                 alt="Dienas citāta fons"
                 className="absolute top-0 left-0 w-full h-full object-cover filter blur-sm brightness-50"
+                crossOrigin="anonymous"
             />
             <div className="relative p-8 text-white z-10">
                 <blockquote className="text-2xl md:text-3xl lg:text-4xl font-serif italic mb-4">
@@ -81,52 +78,15 @@ function QuoteOfTheDayCard({ quote }) {
     );
 }
 
-
 // --- MAZĀKAS KOMPONENTES ---
 
-function QuoteCard({ quote, searchTerm, animationDelay }) {
-  const cardRef = useRef(null);
+function QuoteCard({ quote, searchTerm, animationDelay, onShare }) {
   const [isShareMenuOpen, setShareMenuOpen] = useState(false);
 
-  const handleImageShare = () => {
-    const cardElement = cardRef.current;
-    if (cardElement === null) return;
-    
-    const shareButton = cardElement.querySelector('.share-button');
-    const brandElement = cardElement.querySelector('.branding-on-export');
-    const shareMenu = cardElement.querySelector('.share-menu-container');
-
-    if (shareButton) shareButton.style.visibility = 'hidden';
-    if (shareMenu) shareMenu.style.visibility = 'hidden';
-    if (brandElement) brandElement.style.visibility = 'visible';
-
-    htmlToImage.toPng(cardElement, { 
-        cacheBust: true, 
-        pixelRatio: 2,
-        backgroundColor: '#C2AFF0', 
-      })
-      .then((dataUrl) => {
-        const link = document.createElement('a');
-        link.download = `citats-${quote.id || 'sintijas-citati'}.png`;
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => console.error('Oops, something went wrong!', err))
-      .finally(() => {
-        if (shareButton) shareButton.style.visibility = 'visible';
-        if (brandElement) brandElement.style.visibility = 'hidden';
-      });
-  };
-
-  // LABOJUMS: Ja nav bildes, ģenerējam no picsum.photos
   const getImageUrl = () => {
-    if (quote.image?.url) {
-      return `${STRAPI_URL}${quote.image.url}`;
-    }
-    // Izmantojam citāta ID kā "seed", lai bilde būtu konsekventa
+    if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
     return `https://picsum.photos/seed/${quote.id}/600/400`;
   };
-
   const imageUrl = getImageUrl();
   
   const getFontSizeClass = (text) => {
@@ -135,14 +95,13 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
     if (length > 150) return 'text-lg';
     return 'text-xl';
   };
-
+  
   const shareText = `"${quote.text}" — ${quote.author?.name || 'Nezināms'}`;
   const shareUrl = "https://kazocina.pro";
 
   return (
     <div 
       id={`quote-${quote.id}`}
-      ref={cardRef} 
       className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10 relative animate-fadeIn"
       style={{ animationDelay: `${animationDelay}ms` }}
     >
@@ -152,10 +111,10 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
 
       {isShareMenuOpen && (
         <div 
-            className="share-menu-container absolute top-14 right-3 bg-russian-violet p-2 rounded-lg shadow-2xl z-30 flex flex-col gap-1 border border-mauve/50"
+            className="absolute top-14 right-3 bg-russian-violet p-2 rounded-lg shadow-2xl z-30 flex flex-col gap-1 border border-mauve/50"
             onMouseLeave={() => setShareMenuOpen(false)}
         >
-          <button onClick={handleImageShare} className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md w-full text-left"><i className="fa-solid fa-image w-5 text-center"></i> Kopīgot kā bildi</button>
+          <button onClick={() => onShare(quote)} className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md w-full text-left"><i className="fa-solid fa-image w-5 text-center"></i> Kopīgot kā bildi</button>
           <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-facebook-f w-5 text-center"></i> Facebook</a>
           <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-x-twitter w-5 text-center"></i> X (Twitter)</a>
           <a href={`https://www.threads.net/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-threads w-5 text-center"></i> Threads</a>
@@ -164,9 +123,6 @@ function QuoteCard({ quote, searchTerm, animationDelay }) {
         </div>
       )}
 
-      <div className="branding-on-export absolute top-4 right-4 text-russian-violet font-bold font-sans" style={{ visibility: 'hidden' }}>
-        Sintijas Citāti
-      </div>
       <img 
         src={imageUrl} 
         alt={`Attēls priekš citāta no "${quote.source}"`} 
@@ -258,6 +214,85 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
   const [sourceFilter, setSourceFilter] = useState('');
   const [tagFilter, setTagFilter] = useState('');
 
+  // LABOJUMS: Funkcija ir pārvietota šeit, pareizajā vietā
+  const generateShareImage = async (quote) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#C2AFF0';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const getImageUrl = () => {
+        if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
+        return `https://picsum.photos/seed/${quote.id}/1080/540`;
+    };
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = getImageUrl();
+    
+    await new Promise((resolve) => {
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 1080, 540);
+            resolve();
+        };
+        img.onerror = () => {
+            ctx.fillStyle = '#462255';
+            ctx.fillRect(0, 0, 1080, 540);
+            resolve();
+        };
+    });
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const wrapText = (context, text, x, y, maxWidth, lineHeight) => {
+        const words = text.split(' ');
+        let line = '';
+        const lines = [];
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            if (context.measureText(testLine).width > maxWidth && n > 0) {
+                lines.push(line);
+                line = words[n] + ' ';
+            } else {
+                line = testLine;
+            }
+        }
+        lines.push(line);
+        
+        const totalTextHeight = lines.length * lineHeight;
+        let startY = y - totalTextHeight / 2;
+
+        for (let i = 0; i < lines.length; i++) {
+            context.fillText(lines[i], x, startY);
+            startY += lineHeight;
+        }
+    };
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'italic 60px Arial';
+    wrapText(ctx, `"${quote.text}"`, 540, 750, 900, 70);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 48px Arial';
+    ctx.fillText(`— ${quote.author?.name || 'Nezināms autors'}`, 540, 950);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = 'bold 32px Arial';
+    ctx.fillText('Sintijas Citāti', 1040, 1040);
+
+    const link = document.createElement('a');
+    link.download = `citats-${quote.id}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
   const filteredQuotes = useMemo(() => {
     return quotes.filter(quote => {
       const searchLower = searchTerm.toLowerCase();
@@ -271,6 +306,17 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
   
   const uniqueAuthors = useMemo(() => [...new Set(quotes.map(q => q.author?.name).filter(Boolean))], [quotes]);
   const uniqueSources = useMemo(() => [...new Set(quotes.map(q => q.source).filter(Boolean))], [quotes]);
+
+  const itemsWithAds = useMemo(() => {
+    const items = [];
+    filteredQuotes.forEach((quote, index) => {
+      items.push(<QuoteCard key={quote.id} quote={quote} searchTerm={searchTerm} animationDelay={index * 50} onShare={generateShareImage} />);
+      if ((index + 1) % 6 === 0) {
+        items.push(<AdCard key={`ad-${index}`} adSlot="4775307152" />);
+      }
+    });
+    return items;
+  }, [filteredQuotes, searchTerm]);
 
   const handleRandomQuote = () => {
     if (filteredQuotes.length === 0) return;
@@ -329,14 +375,7 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
             </div>
           </div>
           
-          {filteredQuotes.map((quote, index) => (
-            <React.Fragment key={quote.id}>
-              <QuoteCard quote={quote} searchTerm={searchTerm} animationDelay={index * 50} />
-              {(index + 1) % 6 === 0 && (
-                <AdCard adSlot="4775307152" />
-              )}
-            </React.Fragment>
-          ))}
+          {itemsWithAds}
 
         </div>
         
@@ -347,21 +386,6 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
         {filteredQuotes.length === 0 && (
           <p className="text-center text-gray-500 mt-10">Pēc Jūsu kritērijiem nekas netika atrasts.</p>
         )}
-
-        <div className="mt-16">
-            <h3 className="text-2xl font-bold text-russian-violet text-center mb-6">Pārlūkot pēc tēmas</h3>
-            <div className="flex flex-wrap gap-3 justify-center">
-                {tags.map(tag => (
-                    <button 
-                        key={tag.id} 
-                        onClick={() => setTagFilter(tag.name)}
-                        className="px-4 py-2 text-md rounded-lg transition bg-white/50 hover:bg-mint hover:text-white border border-russian-violet/10"
-                    >
-                        {tag.name}
-                    </button>
-                ))}
-            </div>
-        </div>
       </main>
 
       <ScrollToTopButton />
