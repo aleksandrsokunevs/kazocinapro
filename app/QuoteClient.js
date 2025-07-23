@@ -1,7 +1,6 @@
 'use client'; 
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import * as htmlToImage from 'html-to-image';
 import { AdCard } from './AdComponent'; 
 import Link from 'next/link';
 
@@ -15,12 +14,10 @@ const ListIcon = () => (
 const ArrowUpIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
 );
-const ShareIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-);
 const DiceIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M16 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M8 8h.01"/><path d="M12 16h.01"/></svg>
 );
+const ImageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
 
 
 // --- KONSTANTES ---
@@ -81,8 +78,6 @@ function QuoteOfTheDayCard({ quote }) {
 // --- MAZĀKAS KOMPONENTES ---
 
 function QuoteCard({ quote, searchTerm, animationDelay, onShare }) {
-  const [isShareMenuOpen, setShareMenuOpen] = useState(false);
-
   const getImageUrl = () => {
     if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
     return `https://picsum.photos/seed/${quote.id}/600/400`;
@@ -95,9 +90,6 @@ function QuoteCard({ quote, searchTerm, animationDelay, onShare }) {
     if (length > 150) return 'text-lg';
     return 'text-xl';
   };
-  
-  const shareText = `"${quote.text}" — ${quote.author?.name || 'Nezināms'}`;
-  const shareUrl = "https://kazocina.pro";
 
   return (
     <div 
@@ -105,24 +97,9 @@ function QuoteCard({ quote, searchTerm, animationDelay, onShare }) {
       className="bg-white/50 rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 flex flex-col border border-russian-violet/10 relative animate-fadeIn"
       style={{ animationDelay: `${animationDelay}ms` }}
     >
-      <button onClick={() => setShareMenuOpen(!isShareMenuOpen)} className="share-button absolute top-3 right-3 bg-mint/50 text-white p-2 rounded-full hover:bg-mint transition z-20" aria-label="Kopīgot">
-        <ShareIcon />
+      <button onClick={() => onShare(quote)} className="share-button absolute top-3 right-3 bg-mint/50 text-white p-2 rounded-full hover:bg-mint transition z-20" aria-label="Kopīgot kā attēlu">
+        <ImageIcon />
       </button>
-
-      {isShareMenuOpen && (
-        <div 
-            className="absolute top-14 right-3 bg-russian-violet p-2 rounded-lg shadow-2xl z-30 flex flex-col gap-1 border border-mauve/50"
-            onMouseLeave={() => setShareMenuOpen(false)}
-        >
-          <button onClick={() => onShare(quote)} className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md w-full text-left"><i className="fa-solid fa-image w-5 text-center"></i> Kopīgot kā bildi</button>
-          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-facebook-f w-5 text-center"></i> Facebook</a>
-          <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-x-twitter w-5 text-center"></i> X (Twitter)</a>
-          <a href={`https://www.threads.net/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-threads w-5 text-center"></i> Threads</a>
-          <a href={`https://bsky.app/intent/compose?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-solid fa-cloud w-5 text-center"></i> Bluesky</a>
-          <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 text-sm text-white hover:bg-russian-violet-darker rounded-md"><i className="fa-brands fa-whatsapp w-5 text-center"></i> WhatsApp</a>
-        </div>
-      )}
-
       <img 
         src={imageUrl} 
         alt={`Attēls priekš citāta no "${quote.source}"`} 
@@ -214,19 +191,17 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
   const [sourceFilter, setSourceFilter] = useState('');
   const [tagFilter, setTagFilter] = useState('');
 
-  // LABOJUMS: Funkcija ir pārvietota šeit, pareizajā vietā
+  // JAUNA, UZLABOTA ATTĒLU ĢENERĒŠANAS FUNKCIJA
   const generateShareImage = async (quote) => {
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
     canvas.height = 1080;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#C2AFF0';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    // 1. Fona bilde
     const getImageUrl = () => {
         if (quote.image?.url) return `${STRAPI_URL}${quote.image.url}`;
-        return `https://picsum.photos/seed/${quote.id}/1080/540`;
+        return `https://picsum.photos/seed/${quote.id}/1080/1080`;
     };
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -234,37 +209,54 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
     
     await new Promise((resolve) => {
         img.onload = () => {
-            ctx.drawImage(img, 0, 0, 1080, 540);
+            ctx.drawImage(img, 0, 0, 1080, 1080);
             resolve();
         };
         img.onerror = () => {
-            ctx.fillStyle = '#462255';
-            ctx.fillRect(0, 0, 1080, 540);
+            ctx.fillStyle = '#C2AFF0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             resolve();
         };
     });
 
+    // 2. Tumšs slānis labākai lasāmībai
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // 3. Teksts
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    const wrapText = (context, text, x, y, maxWidth, lineHeight) => {
-        const words = text.split(' ');
-        let line = '';
-        const lines = [];
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            if (context.measureText(testLine).width > maxWidth && n > 0) {
-                lines.push(line);
-                line = words[n] + ' ';
-            } else {
-                line = testLine;
+    // UZLABOTA TEKSTA APLAUŠANAS UN IZMĒRA MAIŅAS FUNKCIJA
+    const wrapAndFitText = (context, text, x, y, maxWidth, maxHeight) => {
+        let fontSize = 60; // Sākotnējais maksimālais fonta izmērs
+        let lines;
+
+        do {
+            context.font = `italic ${fontSize}px Arial`;
+            const words = text.split(' ');
+            let line = '';
+            lines = [];
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                if (context.measureText(testLine).width > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
             }
-        }
-        lines.push(line);
-        
+            lines.push(line);
+            
+            // Pārbaudām, vai teksts ielien augstumā
+            if (lines.length * (fontSize * 1.2) > maxHeight) {
+                fontSize -= 2; // Samazinām fonta izmēru un mēģinām vēlreiz
+            } else {
+                break; // Teksts ielien
+            }
+        } while (fontSize > 20); // Minimālais fonta izmērs
+
+        const lineHeight = fontSize * 1.2;
         const totalTextHeight = lines.length * lineHeight;
         let startY = y - totalTextHeight / 2;
 
@@ -275,18 +267,19 @@ export default function QuoteClient({ initialQuotes, initialTags, quoteOfTheDay 
     };
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'italic 60px Arial';
-    wrapText(ctx, `"${quote.text}"`, 540, 750, 900, 70);
+    wrapAndFitText(ctx, `"${quote.text}"`, 540, 500, 900, 600); // Vairāk vietas tekstam
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 48px Arial';
-    ctx.fillText(`— ${quote.author?.name || 'Nezināms autors'}`, 540, 950);
+    ctx.fillText(`— ${quote.author?.name || 'Nezināms autors'}`, 540, 850);
 
+    // 4. Brendings
     ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.font = 'bold 32px Arial';
     ctx.fillText('Sintijas Citāti', 1040, 1040);
 
+    // 5. Lejupielāde
     const link = document.createElement('a');
     link.download = `citats-${quote.id}.png`;
     link.href = canvas.toDataURL('image/png');
